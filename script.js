@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Use environment variable for API URL or fallback to localhost for development
         const apiUrl = window.CONTACT_API_URL || 'http://localhost:5000';
         
-        fetch(`${apiUrl}/api/contact/send`, {
+        fetch(`${apiUrl}/api/Contact/send`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
