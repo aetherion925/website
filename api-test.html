@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #3b4476; color: white; padding: 12px 30px; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #2a3456; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Contact API Test</h1>
+    <p>Use this page to test the C# Contact API locally or in production.</p>
+    
+    <div class="form-group">
+        <label>API URL:</label>
+        <input type="text" id="apiUrl" value="http://localhost:5000" placeholder="http://localhost:5000">
+        <small>Update this to your Render URL for production testing</small>
+    </div>
+
+    <h3>Health Check</h3>
+    <button onclick="testHealth()">Test API Health</button>
+
+    <h3>Contact Form Test</h3>
+    <form id="testForm">
+        <div class="form-group">
+            <label>Name:</label>
+            <input type="text" id="name" value="Test User" required>
+        </div>
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" id="email" value="test@example.com" required>
+        </div>
+        <div class="form-group">
+            <label>Company:</label>
+            <input type="text" id="company" value="Test Company">
+        </div>
+        <div class="form-group">
+            <label>Service:</label>
+            <select id="service" required>
+                <option value="Web Development">Web Development</option>
+                <option value="Mobile App Development">Mobile App Development</option>
+                <option value="UI/UX Design">UI/UX Design</option>
+                <option value="Custom Software">Custom Software</option>
+                <option value="AI/ML Solutions">AI/ML Solutions</option>
+                <option value="Consulting">Consulting</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Message:</label>
+            <textarea id="message" rows="4" required>This is a test message to verify the contact API is working correctly.</textarea>
+        </div>
+        <button type="submit">Send Test Email</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        function getApiUrl() {
+            return document.getElementById('apiUrl').value.trim();
+        }
+
+        async function testHealth() {
+            try {
+                showResult('Testing API health...', 'info');
+                
+                const response = await fetch(`${getApiUrl()}/api/contact/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`✅ API is healthy!<br>Status: ${data.status}<br>Timestamp: ${data.timestamp}`, 'success');
+                } else {
+                    showResult(`❌ API health check failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Error connecting to API: ${error.message}`, 'error');
+            }
+        }
+
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                showResult('Sending test email...', 'info');
+                
+                const formData = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    company: document.getElementById('company').value,
+                    service: document.getElementById('service').value,
+                    message: document.getElementById('message').value
+                };
+
+                const response = await fetch(`${getApiUrl()}/api/contact/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showResult(`✅ ${data.message}`, 'success');
+                } else {
+                    showResult(`❌ ${data.message || 'Unknown error occurred'}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Error sending email: ${error.message}`, 'error');
+            }
+        });
+
+        // Auto-detect environment
+        if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            document.getElementById('apiUrl').value = 'https://your-render-app-name.onrender.com';
+        }
+    </script>
+</body>
+</html>
